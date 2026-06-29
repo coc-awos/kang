@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部落冲突阵型链接打开器</title>
+    <style>
+        /* 清除默认边距，统一背景色 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa; /* 浅灰底色 */
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+        /* 容器最大宽度，适配手机和电脑端 */
+        .container {
+            max-width: 400px; 
+            width: 100%;
+        }
+        
+        /* ----- 卡片一：转换区样式 ----- */
+        .card-main {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+        }
+        .tips {
+            color: #ff5e5e;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .input-area {
+            width: 100%;
+            min-height: 100px; /*  修改：输入框高度改小 */
+            background: #ffffff;
+            border: 1px solid #e0e0e0; /* 浅灰色边框 */
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #333;
+            resize: none;
+            outline: none;
+        }
+        .input-area:focus {
+            border-color: #3a9df5;
+        }
+        .input-area::placeholder {
+            color: #999;
+        }
+
+        /* 按钮组布局 */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap; /* 屏幕窄时自动换行 */
+            gap: 10px;
+            margin-top: 15px;
+        }
+        /* 按钮基本样式 */
+        .btn {
+            flex: 1; /* 均分宽度 */
+            min-width: 60px;
+            padding: 12px 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:active {
+            opacity: 0.8;
+        }
+        /* 各按钮颜色 */
+        .btn-convert {
+            background-color: #3a9df5; /* 蓝 */
+        }
+        .btn-copy {
+            background-color: #f5a623; /* 橙 */
+        }
+        .btn-clear {
+            background-color: #f46262; /* 红 */
+        }
+        .btn-open-game {
+            background-color: #4caf50; /* 绿 */
+            display: none; /* 默认隐藏 */
+        }
+
+        /* ----- 卡片二和三原有样式 (保持不变) ----- */
+        .extra-area {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding-bottom: 20px;
+        }
+        .extra-card {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .extra-card .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .extra-card .card-title .icon {
+            font-size: 18px;
+        }
+        .btn-pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: #f0f7ff;
+            color: #3a9df5;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-pill:active {
+            background: #dcebff;
+        }
+        .pill-tag {
+            display: inline-block;
+            font-size: 12px;
+            background: #e1efff;
+            color: #3a9df5;
+            padding: 0 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+        .tutorial-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #444;
+        }
+        .tutorial-text p {
+            margin-bottom: 8px;
+        }
+        .tutorial-text .sub-item {
+            display: block;
+            padding-left: 16px;
+            margin-bottom: 6px;
+            font-size: 13.5px;
+        }
+        .tutorial-text .num {
+            font-weight: 600;
+            color: #222;
+        }
+        .tutorial-text .link-label {
+            color: #3a9df5;
+            cursor: pointer;
+            word-break: break-all;
+        }
+        .tutorial-text .link-label:active {
+            color: #1a7ac4;
+        }
+        .jump-btn {
+            color: #3a9df5;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .jump-btn:active {
+            color: #1a7ac4;
+            background: #f0f7ff;
+        }
+        .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        .jump-btn:active .arrow {
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ===== 卡片一：转换工具区 ===== -->
+    <div class="card-main">
+        <!-- 输入框 -->
+        <textarea class="input-area" id="linkInput" rows="3" placeholder="这里输入阵型分享码，点下面的转换，即可转换成链接，输入链接可转换成分享码"></textarea>
+        
+        <!-- 操作按钮 -->
+        <div class="btn-group" id="actionBtns">
+            <button class="btn btn-convert" id="convertBtn">转换</button>
+            <button class="btn btn-copy" id="copyBtn">复制</button>
+            <button class="btn btn-clear" id="clearBtn">清空</button>
+            <button class="btn btn-open-game" id="openGameBtn">打开游戏</button>
+        </div>
+    </div>
+    <!-- ===== 卡片一结束 ===== -->
+
+    <!-- ===== 卡片二和三 (保持原有结构) ===== -->
+    <div class="extra-area">
+        
+        <div class="extra-card">
+            <div class="card-title">
+                <span class="icon"></span> 制作一本村庄
+            </div>
+            <div class="btn-pill-group">
+                <span class="btn-pill" data-url="https://link.clashofclans.com/cn/?action=OpenEvents">打开活动</span>
+                <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenMoreSettings">打开更多设置</span>
+                <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenShop">打开商城</span>
+                <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenNews">打开新闻</span>
+            </div>
+        </div>
+
+        <div class="extra-card">
+            <div class="card-title">
+                <span class="icon">⚡</span> 新手教程与快速升级
+            </div>
+            <div class="tutorial-text">
+                <p><span class="num">1、</span>在进行新手教程中，起名字后提示1本升级2本时停止操作，直接用链接打开游戏铲树和刷单人模式。</p>
+                <p><span class="num">2、</span>将账号弄到10级就会自动跳过新手教程。</p>
+                <p><span class="num">3、</span>建城堡：打开商店用创作者代码输入coc123直接拿1千万资源</p>
+                <p style="margin-top: 6px;">重点为以下重复操作：</p>
+                <p><span class="num">4、</span>通过浏览器输入以下链接跳转到游戏内：</p>
+                <span class="sub-item">用以下链接跳转到游戏内编辑阵型进行铲树</span>
+                <span class="sub-item"><span class="jump-btn" data-url="https://link.clashofclans.com/cn/?action=OpenLayoutEditor">点击跳转 <span class="arrow">→</span></span></span>
+                <div style="height: 8px;"></div>
+                <span class="sub-item">用以下链接跳转至进攻界面切换到单人模式进攻哥布林营地，使用20个野蛮人爆本后立刻关闭游戏（重复此操作直至10级）</span>
+                <span class="sub-item"><span class="jump-btn" data-url="https://link.clashofclans.com/cn/?action=OpenAttackScreen">点击跳转 <span class="arrow">→</span></span></span>
+            </div>
+        </div>
+        
+    </div>
+
+</div>
+
+<script>
+    const linkInput = document.getElementById('linkInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const openGameBtn = document.getElementById('openGameBtn');
+
+    // 1. 检测是否为安卓系统
+    const isAndroid = /android/i.test(navigator.userAgent);
+
+    //  修改：不再限制为TH开头，只要不是完整的http链接，都认为是分享码
+    function isShareCode(text) {
+        return !text.startsWith('http'); 
+    }
+
+    function isLayoutLink(text) {
+        return text.startsWith('https://link.clashofclans.com/cn?action=OpenLayout&id=');
+    }
+
+    // 2. 核心转换逻辑
+    convertBtn.addEventListener('click', function() {
+        let val = linkInput.value.trim();
+        if (!val) {
+            alert('请输入内容！');
+            return;
+        }
+
+        let newVal = '';
+        let isLink = false; // 用于控制“打开游戏”按钮显隐
+
+        //  修改：如果是纯代码，自动加前缀
+        if (isShareCode(val)) {
+            // 分享码 -> 完整链接
+            newVal = `https://link.clashofclans.com/cn?action=OpenLayout&id=${encodeURIComponent(val)}`;
+            isLink = true; // 变为链接，显示按钮
+        } else if (isLayoutLink(val)) {
+            // 链接 -> 分享码 (安全解析 URL)
+            try {
+                const url = new URL(val);
+                const id = url.searchParams.get('id');
+                if (id) {
+                    newVal = decodeURIComponent(id);
+                    isLink = false; // 变为分享码，隐藏按钮
+                } else {
+                    alert('未找到有效的阵型ID，请检查链接是否正确！');
+                    return;
+                }
+            } catch (e) {
+                alert('链接格式错误，无法解析！');
+                return;
+            }
+        } else {
+            alert('请输入有效的阵型分享码或阵型链接！'); //  修改：去掉“以TH开头”的提示
+            return;
+        }
+
+        // 更新输入框
+        linkInput.value = newVal;
+        // 控制“打开游戏”按钮的显示与隐藏
+        openGameBtn.style.display = isLink ? 'flex' : 'none';
+    });
+
+    // 3. 监听用户手动输入来显隐“打开游戏”按钮（防误触）
+    linkInput.addEventListener('input', function() {
+        const val = this.value.trim();
+        if (val.startsWith('https://link.clashofclans.com/cn')) {
+            openGameBtn.style.display = 'flex'; // 输入的是链接 => 显示
+        } else {
+            openGameBtn.style.display = 'none'; // 输入的是TH分享码或其它 => 隐藏
+        }
+    });
+
+    // 4. 复制按钮逻辑
+    copyBtn.addEventListener('click', async function() {
+        if (!linkInput.value.trim()) {
+            alert('内容为空，无法复制！');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(linkInput.value);
+            alert('已成功复制到剪贴板！');
+        } catch (err) {
+            alert('复制失败，请手动长按选择复制。');
+        }
+    });
+
+    // 5. 清空按钮逻辑
+    clearBtn.addEventListener('click', function() {
+        linkInput.value = '';
+        openGameBtn.style.display = 'none'; // 清空后隐藏按钮
+    });
+
+    // 6. “打开游戏”按钮逻辑 (加载国服包名)
+    openGameBtn.addEventListener('click', function() {
+        let url = linkInput.value.trim();
+        if (!url) {
+            alert('链接无效！');
+            return;
+        }
+        // 如果用户使用的是安卓手机，且输入的是 https 开头的链接
+        // 强制转换为 intent 协议，指定【国服】包名
+        if (isAndroid && url.startsWith('https://link.clashofclans.com')) {
+            let params = url.split('?')[1] || '';
+            if (!params && url.includes('action=')) {
+                const match = url.match(/action=([^&]+)/);
+                if(match) params = 'action=' + match[1];
+            }
+            // 锁定腾讯国服包名
+            url = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
+        } else if (!isAndroid) {
+            // 如果是苹果 iOS 系统，无法通过代码强制选服，弹窗提示用户手动操作
+            alert(" iOS 提示：如果你的手机里同时装有国服和国际服，苹果系统必定会弹窗让你选择。\n【唯一解决办法】：卸载掉你不需要的那个版本，下次点击就能直接进入国际服！");
+        }
+        // 执行最终跳转
+        window.location.href = url;
+    });
+
+    // 7. 卡片二、三 快捷按钮点击跳转 (兼容原有 data-url 逻辑)
+    document.querySelectorAll('[data-url]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (!url) return;
+            // 强制走国服包名跳转
+            if (isAndroid && url.startsWith('https://link.clashofclans.com')) {
+                let params = url.split('?')[1] || '';
+                if (!params && url.includes('action=')) {
+                    const match = url.match(/action=([^&]+)/);
+                    if(match) params = 'action=' + match[1];
+                }
+                const intentUrl = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
+                window.location.href = intentUrl;
+            } else {
+                window.location.href = url;
+            }
+        });
+    });
+</script>
+</body>
+</html>
