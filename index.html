@@ -115,6 +115,7 @@
             display: block; 
             text-align: center;
         }
+        /* 第一行 flex 布局，实现并列 */
         .info-section .first-line {
             display: flex;
             justify-content: center;
@@ -241,7 +242,7 @@
             transform: translateX(4px);
         }
 
-        /* ----- 新增底部辅助下载卡片 ----- */
+        /* ----- 底部辅助下载卡片 ----- */
         .footer-download {
             text-align: center;
             padding: 16px 18px;
@@ -282,13 +283,11 @@
 
     <!-- ===== 中间信息区 ===== -->
     <div class="info-section">
-        <!-- 第一行：计时器、国服、国际服并列显示 -->
         <div class="first-line">
             <span class="link-text" data-url="https://cungu.aiyige.ren/">部落冲突计时器</span>
             <span class="link-text" data-url="https://coc.qq.com/zlkdatasys/mct/d/play.shtml?device=android">国服</span>
             <span class="link-text" data-url="https://pan.xingchencoc.com">国际服</span>
         </div>
-        <!-- 第二行：文字提示兼复制链接 -->
         <div class="line">
             <span class="copy-only">iOS用户复制链接在Safari打开coc-awos.github.io/kang 共享添加到主屏幕使用</span>
         </div>
@@ -326,8 +325,8 @@
             </div>
         </div>
 
-        <!-- ===== 新增：底部辅助下载卡片（已隐藏具体网址） ===== -->
-        <div class="extra-card footer-download" onclick="window.open('https://vlink.cc/yyyo', '_blank')">
+        <!-- ===== 底部辅助下载卡片 ===== -->
+        <div class="extra-card footer-download" id="footerDownload">
             <div class="download-text">获取辅助工具</div>
             <div class="download-hint">点击此卡片跳转浏览器下载</div>
         </div>
@@ -422,7 +421,7 @@
         openGameBtn.style.display = 'none';
     });
 
-    // “打开游戏”按钮逻辑
+    // “打开游戏”按钮逻辑 (加载国服包名)
     openGameBtn.addEventListener('click', function() {
         let url = linkInput.value.trim();
         if (!url) {
@@ -440,17 +439,22 @@
         window.location.href = url;
     });
 
-    // 外部链接（信息区）：点击文字唤起系统浏览器跳转
+    // === 修复点1：蓝色文字跳转（替换掉 window.open 防止被浏览器拦截） ===
     document.querySelectorAll('.link-text').forEach(function(el) {
-        el.addEventListener('click', function() {
+        el.addEventListener('click', function(e) {
             const url = this.getAttribute('data-url');
             if (url) {
-                window.open(url, '_blank');
+                window.location.href = url; // 直接改变 location 可 100% 唤起浏览器跳转
             }
         });
     });
 
-    // 原有卡片按钮跳转
+    // === 修复点2：底部下载卡片跳转（同样防止拦截） ===
+    document.getElementById('footerDownload').addEventListener('click', function() {
+        window.location.href = 'https://vlink.cc/yyyo';
+    });
+
+    // 原有游戏类跳转
     document.querySelectorAll('[data-url]').forEach(function(el) {
         el.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
@@ -464,8 +468,8 @@
                 const intentUrl = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
                 window.location.href = intentUrl;
             } else if (!url.startsWith('https://link.clashofclans.com')) {
-                // 外部链接在新标签页打开
-                window.open(url, '_blank');
+                // 如果是不需要特殊意图的普通外链
+                window.location.href = url;
             } else {
                 window.location.href = url;
             }
@@ -474,3 +478,4 @@
 </script>
 </body>
 </html>
+
