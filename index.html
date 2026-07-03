@@ -115,7 +115,6 @@
             display: block; 
             text-align: center;
         }
-        /* 第一行 flex 布局，实现并列 */
         .info-section .first-line {
             display: flex;
             justify-content: center;
@@ -434,31 +433,58 @@
                 const match = url.match(/action=([^&]+)/);
                 if(match) params = 'action=' + match[1];
             }
+            // 指定腾讯国服包名
             url = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
         }
         window.location.href = url;
     });
 
-    // === 修复点1：蓝色文字跳转（替换掉 window.open 防止被浏览器拦截） ===
+    // ==========================================
+    //  核心升级：针对安卓系统，构建 Intent 强制唤起手机浏览器
+    // ==========================================
+    function openExternalLink(url) {
+        if (isAndroid) {
+            // 针对安卓环境，转换成标准的 intent:// 协议，强制系统弹出浏览器选择
+            try {
+                // 解析 URL 以确保路径和参数正确组合
+                const urlObj = new URL(url);
+                // 构建 Intent 字符串
+                const intentUrl = `intent://${urlObj.host}${urlObj.pathname}${urlObj.search}#Intent;scheme=https;action=android.intent.action.VIEW;end;`;
+                window.location.href = intentUrl;
+            } catch (e) {
+                // 如果 URL 解析失败，直接降级为普通的 location 跳转
+                window.location.href = url;
+            }
+        } else {
+            // iOS 环境由于系统限制，只能使用 window.open 或利用 Safari 的特性
+            // 若是在 Safari 中打开，此方法会直接在当前页跳转
+            window.open(url, '_blank');
+        }
+    }
+
+    // --- 应用强制跳转到浏览器逻辑 ---
+
+    // 1. 蓝色文字（计时器/国服/国际服）跳转
     document.querySelectorAll('.link-text').forEach(function(el) {
         el.addEventListener('click', function(e) {
             const url = this.getAttribute('data-url');
             if (url) {
-                window.location.href = url; // 直接改变 location 可 100% 唤起浏览器跳转
+                openExternalLink(url);
             }
         });
     });
 
-    // === 修复点2：底部下载卡片跳转（同样防止拦截） ===
+    // 2. 底部辅助下载卡片跳转
     document.getElementById('footerDownload').addEventListener('click', function() {
-        window.location.href = 'https://vlink.cc/yyyo';
+        openExternalLink('https://vlink.cc/yyyo');
     });
 
-    // 原有游戏类跳转
-    document.querySelectorAll('[data-url]').forEach(function(el) {
+    // 3. 原有的游戏内链接（保留原本的 game intent）
+    document.querySelectorAll('.jump-btn, .btn-pill').forEach(function(el) {
         el.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
             if (!url) return;
+            
             if (isAndroid && url.startsWith('https://link.clashofclans.com')) {
                 let params = url.split('?')[1] || '';
                 if (!params && url.includes('action=')) {
@@ -468,8 +494,8 @@
                 const intentUrl = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
                 window.location.href = intentUrl;
             } else if (!url.startsWith('https://link.clashofclans.com')) {
-                // 如果是不需要特殊意图的普通外链
-                window.location.href = url;
+                // 如果是普通外部网页，也使用强制跳浏览器策略
+                openExternalLink(url);
             } else {
                 window.location.href = url;
             }
@@ -478,4 +504,3 @@
 </script>
 </body>
 </html>
-
