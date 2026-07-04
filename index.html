@@ -280,15 +280,11 @@
         </div>
     </div>
 
-    <!-- ===== 中间信息区 ===== -->
+    <!-- ===== 中间信息区（已删除指定文字和按钮） ===== -->
     <div class="info-section">
         <div class="first-line">
             <span class="link-text" data-url="https://cungu.aiyige.ren/">部落冲突计时器</span>
             <span class="link-text" data-url="https://coc.qq.com/zlkdatasys/mct/d/play.shtml?device=android">国服</span>
-            <span class="link-text" data-url="https://pan.xingchencoc.com">国际服</span>
-        </div>
-        <div class="line">
-            <span class="copy-only">iOS用户复制链接在Safari打开coc-awos.github.io/kang 共享添加到主屏幕使用</span>
         </div>
     </div>
 
@@ -464,7 +460,7 @@
 
     // --- 应用强制跳转到浏览器逻辑 ---
 
-    // 1. 蓝色文字（计时器/国服/国际服）跳转
+    // 1. 蓝色文字（计时器/国服）跳转（已删除国际服）
     document.querySelectorAll('.link-text').forEach(function(el) {
         el.addEventListener('click', function(e) {
             const url = this.getAttribute('data-url');
