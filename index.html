@@ -735,16 +735,15 @@
         });
     });
 
-    // 下载App逻辑
-    const appDownloadUrl = 'https://pan.meil.wang/f/d/qx1C0/%E9%83%A8%E8%90%BD%E5%B0%8F%E5%B7%A5%E5%85%B7_1.0.0.apk';
-    
+    // 顶部下载 App
     document.getElementById('downloadAppBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        openExternalLink(appDownloadUrl);
+        openExternalLink(this.getAttribute('href'));
     });
 
+    // 底部获取辅助工具
     document.getElementById('footerDownload').addEventListener('click', function() {
-        openExternalLink(appDownloadUrl);
+        openExternalLink('https://vlink.cc/yyyo');
     });
 
     document.querySelectorAll('.jump-action, .btn-pill').forEach(function(el) {
