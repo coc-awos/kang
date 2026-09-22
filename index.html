@@ -476,6 +476,45 @@
             background: #3a9df5;
             color: #fff;
         }
+
+        /* 图片灯箱浮层预览（免跳浏览器） */
+        .image-viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .image-viewer-overlay.active {
+            display: flex;
+        }
+        .image-viewer-img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .image-viewer-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 26px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -506,7 +545,7 @@
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn/?action=OpenLayoutEditor">打开阵型编辑器（清障碍）</span>
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn/?action=OpenAttackScreen">单人爆本</span>
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn/?action=OpenEvents">打开活动</span>
-            <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenShop">打开商城</span>
+            <span class="btn-pill" data-url="https://link.clashofclans.com/cn/?action=OpenShop">打开商城</span>
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenTraining">打开练兵页面</span>
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenMoreSettings">打开更多设置</span>
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenSettings">打开设置</span>
@@ -542,8 +581,8 @@
             <p><span class="step-num">2、</span>将账号弄到10级就会自动跳过新手教程。</p>
             <p><span class="step-num">3、</span>一本建城堡：通过游戏礼包签到获得资源：</p>
             <div class="gift-links-row">
-                <span class="gift-pill external-link-btn" data-url="https://i.imgant.com/v2/ksPfayL.jpeg">心悦俱乐部</span>
-                <span class="gift-pill external-link-btn" data-url="https://i.imgant.com/v2/64K80UB.jpeg">好游快爆</span>
+                <span class="gift-pill preview-img-btn" data-img="https://i.imgant.com/v2/ksPfayL.jpeg">心悦俱乐部</span>
+                <span class="gift-pill preview-img-btn" data-img="https://i.imgant.com/v2/64K80UB.jpeg">好游快爆</span>
             </div>
             <p style="margin-top: 10px; color: #666; font-weight: 500;">重点为以下重复操作：</p>
             <p><span class="step-num">4、</span>通过浏览器输入以下链接跳转到游戏内：</p>
@@ -657,6 +696,12 @@
 
         </div>
     </div>
+</div>
+
+<!-- 图片直接预览层（免跳浏览器） -->
+<div class="image-viewer-overlay" id="imageViewer">
+    <div class="image-viewer-close" id="closeImageViewer">✕</div>
+    <img src="" class="image-viewer-img" id="previewImg" alt="礼包图片">
 </div>
 
 <script>
@@ -926,12 +971,25 @@
         });
     });
 
-    // 外部链接跳转（心悦/好游快爆）
-    document.querySelectorAll('.external-link-btn').forEach(btn => {
+    // 图片直接灯箱预览逻辑（不跳浏览器）
+    const imageViewer = document.getElementById('imageViewer');
+    const previewImg = document.getElementById('previewImg');
+    const closeImageViewer = document.getElementById('closeImageViewer');
+
+    document.querySelectorAll('.preview-img-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const url = this.getAttribute('data-url');
-            if (url) openExternalLink(url);
+            const imgUrl = this.getAttribute('data-img');
+            previewImg.src = imgUrl;
+            imageViewer.classList.add('active');
         });
+    });
+
+    imageViewer.addEventListener('click', function(e) {
+        imageViewer.classList.remove('active');
+    });
+
+    closeImageViewer.addEventListener('click', function() {
+        imageViewer.classList.remove('active');
     });
 
     // 顶部下载 App
