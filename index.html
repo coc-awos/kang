@@ -143,12 +143,14 @@
             background: #e1effc;
         }
 
+        /* 标签快捷操作及下拉历史组件 */
         .tag-action-box {
             margin-top: 14px;
             padding-top: 14px;
             border-top: 1px dashed #e8ebed;
             display: flex;
             gap: 8px;
+            position: relative;
         }
         .tag-input-container {
             position: relative;
@@ -205,6 +207,80 @@
         }
         .tag-submit-btn:active {
             opacity: 0.85;
+        }
+
+        /* 仿图样式的搜索历史下拉框 */
+        .history-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eaeaea;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+        .history-dropdown.active {
+            display: block;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #222;
+            border-bottom: 1px solid #f2f4f6;
+        }
+        .history-clear-all {
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .history-clear-all:hover {
+            color: #f46262;
+        }
+        .history-list {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .history-item {
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .history-item:hover, .history-item:active {
+            background: #f7f9fc;
+        }
+        .history-tag-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #222;
+            letter-spacing: 0.5px;
+        }
+        .history-del-btn {
+            font-size: 14px;
+            color: #bbb;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+        .history-del-btn:hover {
+            color: #888;
+        }
+        .history-empty {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
         }
 
         /* 教程与步骤 */
@@ -266,7 +342,7 @@
             margin-top: 2px;
         }
 
-        /* ===== 浮窗 (Modal) 样式 ===== */
+        /* 浮窗 (Modal) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -416,12 +492,22 @@
             <span class="btn-pill" data-url="https://link.clashofclans.com/cn?action=OpenNews">打开新闻</span>
         </div>
 
-        <div class="tag-action-box">
+        <!-- 标签输入框与历史记录模块 -->
+        <div class="tag-action-box" id="tagActionBox">
             <div class="tag-input-container">
-                <input type="text" id="playerTagInput" class="tag-input" placeholder="输入标签如：#QJULU0G0V">
+                <input type="text" id="playerTagInput" class="tag-input" placeholder="输入标签如：#QJULU0G0V" autocomplete="off">
                 <span class="clear-icon" id="clearTagBtn">✕</span>
             </div>
             <button class="tag-submit-btn" id="openTagBtn">打开标签页面</button>
+
+            <!-- 搜索历史下拉面板 -->
+            <div class="history-dropdown" id="historyDropdown">
+                <div class="history-header">
+                    <span>搜索历史</span>
+                    <span class="history-clear-all" id="clearAllHistoryBtn">清空</span>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
         </div>
     </div>
 
@@ -557,6 +643,10 @@
     const playerTagInput = document.getElementById('playerTagInput');
     const clearTagBtn = document.getElementById('clearTagBtn');
     const openTagBtn = document.getElementById('openTagBtn');
+    const historyDropdown = document.getElementById('historyDropdown');
+    const historyList = document.getElementById('historyList');
+    const clearAllHistoryBtn = document.getElementById('clearAllHistoryBtn');
+    const tagActionBox = document.getElementById('tagActionBox');
     const isAndroid = /android/i.test(navigator.userAgent);
 
     function isShareCode(text) {
@@ -567,7 +657,6 @@
         return text.startsWith('https://link.clashofclans.com/cn?action=OpenLayout&id=');
     }
 
-    // 转换逻辑
     convertBtn.addEventListener('click', function() {
         let val = linkInput.value.trim();
         if (!val) {
@@ -663,7 +752,84 @@
         }
     }
 
-    // 标签输入交互
+    // ===== 标签搜索历史逻辑 =====
+    const STORAGE_KEY = 'coc_tag_search_history';
+
+    function getHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveHistory(tag) {
+        let list = getHistory();
+        // 去重并排在最前
+        list = list.filter(item => item !== tag);
+        list.unshift(tag);
+        if (list.length > 8) list = list.slice(0, 8); // 最多存8条
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function removeHistoryItem(tag) {
+        let list = getHistory().filter(item => item !== tag);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const list = getHistory();
+        if (list.length === 0) {
+            historyList.innerHTML = '<div class="history-empty">暂无搜索历史</div>';
+            return;
+        }
+
+        historyList.innerHTML = list.map(item => `
+            <div class="history-item" data-tag="${item}">
+                <span class="history-tag-name">#${item}</span>
+                <span class="history-del-btn" data-del="${item}">✕</span>
+            </div>
+        `).join('');
+
+        // 绑定点击历史填入并执行
+        historyList.querySelectorAll('.history-item').forEach(el => {
+            el.addEventListener('click', function(e) {
+                if (e.target.classList.contains('history-del-btn')) {
+                    e.stopPropagation();
+                    const delTag = e.target.getAttribute('data-del');
+                    removeHistoryItem(delTag);
+                    return;
+                }
+                const tag = this.getAttribute('data-tag');
+                playerTagInput.value = '#' + tag;
+                clearTagBtn.style.display = 'flex';
+                historyDropdown.classList.remove('active');
+                openTagAction(tag);
+            });
+        });
+    }
+
+    // 聚焦时显示历史
+    playerTagInput.addEventListener('focus', function() {
+        renderHistory();
+        historyDropdown.classList.add('active');
+    });
+
+    // 点击空白处收起
+    document.addEventListener('click', function(e) {
+        if (!tagActionBox.contains(e.target)) {
+            historyDropdown.classList.remove('active');
+        }
+    });
+
+    // 清空全部历史
+    clearAllHistoryBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+    });
+
     playerTagInput.addEventListener('input', function() {
         clearTagBtn.style.display = this.value.trim() ? 'flex' : 'none';
     });
@@ -673,6 +839,17 @@
         clearTagBtn.style.display = 'none';
         playerTagInput.focus();
     });
+
+    function openTagAction(tagRaw) {
+        let tag = tagRaw.replace(/#/g, '').toUpperCase();
+        if (!/^[0-9PYLQGRJCUV]+$/.test(tag)) {
+            alert('标签格式不正确，请核对后重试！');
+            return;
+        }
+        saveHistory(tag);
+        const finalUrl = `https://link.clashofclans.com/en/?action=OpenPlayerProfile&tag=${tag}`;
+        triggerGameUrl(finalUrl);
+    }
 
     openTagBtn.addEventListener('click', function() {
         let inputVal = playerTagInput.value.trim();
@@ -686,14 +863,8 @@
             return;
         }
 
-        let tag = inputVal.replace(/#/g, '').toUpperCase();
-        if (!/^[0-9PYLQGRJCUV]+$/.test(tag)) {
-            alert('标签格式不正确，请核对后重试！');
-            return;
-        }
-
-        const finalUrl = `https://link.clashofclans.com/en/?action=OpenPlayerProfile&tag=${tag}`;
-        triggerGameUrl(finalUrl);
+        historyDropdown.classList.remove('active');
+        openTagAction(inputVal);
     });
 
     // 浮窗控制
@@ -715,7 +886,6 @@
         }
     });
 
-    // 浮窗内复制/直达
     document.querySelectorAll('.btn-item-copy').forEach(btn => {
         btn.addEventListener('click', async function() {
             const copyText = this.getAttribute('data-copy');
@@ -735,13 +905,11 @@
         });
     });
 
-    // 顶部下载 App
     document.getElementById('downloadAppBtn').addEventListener('click', function(e) {
         e.preventDefault();
         openExternalLink(this.getAttribute('href'));
     });
 
-    // 底部获取辅助工具
     document.getElementById('footerDownload').addEventListener('click', function() {
         openExternalLink('https://vlink.cc/yyyo');
     });
