@@ -209,7 +209,7 @@
             opacity: 0.85;
         }
 
-        /* 仿图样式的搜索历史下拉框 */
+        /* 搜索历史下拉面板 */
         .history-dropdown {
             position: absolute;
             top: calc(100% + 4px);
@@ -295,6 +295,27 @@
         .tutorial-body .step-num {
             font-weight: 600;
             color: #111;
+        }
+        .gift-links-row {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0 10px 18px;
+        }
+        .gift-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 12px;
+            background: #eef7ff;
+            color: #2e88db;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #d8ebfa;
+            transition: all 0.15s;
+        }
+        .gift-pill:active {
+            background: #dbeaff;
         }
         .tutorial-sub {
             padding-left: 12px;
@@ -519,7 +540,11 @@
         <div class="tutorial-body">
             <p><span class="step-num">1、</span>在进行新手教程中，起名字后提示1本升级2本时停止操作，直接用链接打开游戏铲树和刷单人模式。</p>
             <p><span class="step-num">2、</span>将账号弄到10级就会自动跳过新手教程。</p>
-            <p><span class="step-num">3、</span>建城堡：打开商店用创作者代码输入 coc123 直接拿 1 千万资源。</p>
+            <p><span class="step-num">3、</span>一本建城堡：通过游戏礼包签到获得资源：</p>
+            <div class="gift-links-row">
+                <span class="gift-pill external-link-btn" data-url="https://i.imgant.com/v2/ksPfayL.jpeg">心悦俱乐部</span>
+                <span class="gift-pill external-link-btn" data-url="https://i.imgant.com/v2/64K80UB.jpeg">好游快爆</span>
+            </div>
             <p style="margin-top: 10px; color: #666; font-weight: 500;">重点为以下重复操作：</p>
             <p><span class="step-num">4、</span>通过浏览器输入以下链接跳转到游戏内：</p>
             <div class="tutorial-sub">
@@ -657,6 +682,7 @@
         return text.startsWith('https://link.clashofclans.com/cn?action=OpenLayout&id=');
     }
 
+    // 转换逻辑
     convertBtn.addEventListener('click', function() {
         let val = linkInput.value.trim();
         if (!val) {
@@ -752,7 +778,7 @@
         }
     }
 
-    // ===== 标签搜索历史逻辑 =====
+    // 标签搜索历史逻辑
     const STORAGE_KEY = 'coc_tag_search_history';
 
     function getHistory() {
@@ -765,10 +791,9 @@
 
     function saveHistory(tag) {
         let list = getHistory();
-        // 去重并排在最前
         list = list.filter(item => item !== tag);
         list.unshift(tag);
-        if (list.length > 8) list = list.slice(0, 8); // 最多存8条
+        if (list.length > 8) list = list.slice(0, 8);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
 
@@ -792,7 +817,6 @@
             </div>
         `).join('');
 
-        // 绑定点击历史填入并执行
         historyList.querySelectorAll('.history-item').forEach(el => {
             el.addEventListener('click', function(e) {
                 if (e.target.classList.contains('history-del-btn')) {
@@ -810,20 +834,17 @@
         });
     }
 
-    // 聚焦时显示历史
     playerTagInput.addEventListener('focus', function() {
         renderHistory();
         historyDropdown.classList.add('active');
     });
 
-    // 点击空白处收起
     document.addEventListener('click', function(e) {
         if (!tagActionBox.contains(e.target)) {
             historyDropdown.classList.remove('active');
         }
     });
 
-    // 清空全部历史
     clearAllHistoryBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         localStorage.removeItem(STORAGE_KEY);
@@ -905,11 +926,21 @@
         });
     });
 
+    // 外部链接跳转（心悦/好游快爆）
+    document.querySelectorAll('.external-link-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) openExternalLink(url);
+        });
+    });
+
+    // 顶部下载 App
     document.getElementById('downloadAppBtn').addEventListener('click', function(e) {
         e.preventDefault();
         openExternalLink(this.getAttribute('href'));
     });
 
+    // 底部获取辅助工具
     document.getElementById('footerDownload').addEventListener('click', function() {
         openExternalLink('https://vlink.cc/yyyo');
     });
