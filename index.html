@@ -724,6 +724,7 @@
     const clearAllHistoryBtn = document.getElementById('clearAllHistoryBtn');
     const tagActionBox = document.getElementById('tagActionBox');
     const isAndroid = /android/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     function isShareCode(text) {
         return text.startsWith('TH'); 
@@ -806,6 +807,11 @@
                 if(match) params = 'action=' + match[1];
             }
             url = `intent://open_layout?${params}#Intent;scheme=clashofclans;package=com.tencent.tmgp.supercell.clashofclans;end;`;
+        }
+        if (isIOS && url.startsWith('https://link.clashofclans.com') && url.includes('?')) {
+            // iOS：绕开 Universal Link（会被国际服接管），直接用自定义 scheme 打开
+            window.location.href = 'clashofclans://' + url.split('?')[1];
+            return;
         }
         window.location.href = url;
     }
@@ -917,7 +923,7 @@
             return;
         }
         saveHistory(tag);
-        const finalUrl = `https://link.clashofclans.com/en/?action=OpenPlayerProfile&tag=${tag}`;
+        const finalUrl = `https://link.clashofclans.com/cn/?action=OpenPlayerProfile&tag=${tag}`;
         triggerGameUrl(finalUrl);
     }
 
