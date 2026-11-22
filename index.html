@@ -730,8 +730,22 @@
         return text.startsWith('TH'); 
     }
 
+    function isCocHost(text) {
+        return /^https?:\/\/(link\.clashofclans\.com|coc\.qq\.com)\//i.test(text);
+    }
+
     function isLayoutLink(text) {
-        return text.startsWith('https://link.clashofclans.com/cn?action=OpenLayout&id=');
+        return isCocHost(text) && /[?&]action=OpenLayout(&|$)/i.test(text) && /[?&]id=/i.test(text);
+    }
+
+    // 把 coc.qq.com 的国服分享链接规范为 link.clashofclans.com/cn 格式（去掉 scheme 参数）
+    function normalizeCocLink(url) {
+        if (!/^https?:\/\/coc\.qq\.com\//i.test(url) || !url.includes('?')) return url;
+        const q = new URLSearchParams(url.split('?')[1].split('#')[0]);
+        q.delete('scheme');
+        const parts = [];
+        q.forEach((v, k) => parts.push(k + '=' + encodeURIComponent(v)));
+        return 'https://link.clashofclans.com/cn?' + parts.join('&');
     }
 
     convertBtn.addEventListener('click', function() {
@@ -739,6 +753,10 @@
         if (!val) {
             alert('请输入内容！');
             return;
+        }
+        if (!isShareCode(val) && !/^https?:\/\//i.test(val)) {
+            const m = val.match(/https?:\/\/[^\s]+/i);
+            if (m) val = m[0];
         }
 
         let newVal = '';
@@ -773,7 +791,7 @@
 
     linkInput.addEventListener('input', function() {
         const val = this.value.trim();
-        if (val.startsWith('https://link.clashofclans.com/cn')) {
+        if (val.startsWith('https://link.clashofclans.com/cn') || isLayoutLink(val)) {
             openGameBtn.style.display = 'block';
         } else {
             openGameBtn.style.display = 'none';
@@ -800,6 +818,7 @@
 
     function triggerGameUrl(url) {
         if (!url) return;
+        url = normalizeCocLink(url);
         if (isAndroid && url.startsWith('https://link.clashofclans.com')) {
             let params = url.split('?')[1] || '';
             if (!params && url.includes('action=')) {
